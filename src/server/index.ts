@@ -1,14 +1,26 @@
 import { z } from "zod";
-import { publicProcedure, router } from "./trpc";
+import { authedProcedure, publicProcedure, router } from "./trpc";
+import { auth } from "@/lib/auth";
 
 export const appRouter = router({
-  getHello: publicProcedure.query(async () => {
-    return new Date().toISOString()
+  profile: publicProcedure.query(async ({}) => {
+    return await auth();
   }),
-  getHelloById: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
-      return `Hello world ${input.id}`;
+
+  // Create a new Vote
+  createVote: authedProcedure
+    .input(
+      z
+        .array(
+          z.object({
+            id: z.string(),
+            item: z.string(),
+          })
+        )
+        .min(2)
+    )
+    .mutation(async ({ input }) => {
+      return input;
     }),
 });
 

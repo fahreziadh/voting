@@ -6,10 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:migrate": "drizzle-kit generate && drizle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.4.2",
+    "@libsql/client": "^0.11.0",
     "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-popover": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@tanstack/react-query": "^5.56.2",
     "@trpc/client": "^11.0.0-rc.502",
@@ -17,8 +22,10 @@
     "@trpc/server": "^11.0.0-rc.502",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.33.0",
     "lucide-react": "^0.441.0",
     "next": "14.2.11",
+    "next-auth": "^5.0.0-beta.20",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.5.2",
@@ -26,13 +33,14 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "drizzle-kit": "^0.24.2",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.11",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.11"
+    "typescript": "^5"
   }
 }
