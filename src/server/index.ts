@@ -19,7 +19,7 @@ export const appRouter = router({
         )
         .min(2)
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input,ctx }) => {
       return input;
     }),
 });

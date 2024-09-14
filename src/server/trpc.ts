@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { TRPCError, initTRPC } from "@trpc/server";
-const t = initTRPC.create();
+import { Context } from "./context";
+
+const t = initTRPC.context<Context>().create();
 
 export const authMiddleware = t.middleware(async ({ next }) => {
   const session = await auth();
