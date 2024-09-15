@@ -1,12 +1,11 @@
-import { auth } from "@/lib/auth";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { Context } from "./context";
 
 const t = initTRPC.context<Context>().create();
 
-export const authMiddleware = t.middleware(async ({ next }) => {
-  const session = await auth();
-  if (!session) {
+export const authMiddleware = t.middleware(async ({ next, ctx }) => {
+
+  if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 

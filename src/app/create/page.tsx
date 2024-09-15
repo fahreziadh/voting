@@ -10,44 +10,54 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { trpc } from "@/lib/trpc/client";
 import { Plus, Trash } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
 
 const Page = () => {
-  const [options, setOptions] = useState<
-    {
-      id: string;
-      item: string;
-    }[]
-  >([]);
+  const router = useRouter();
+  const { mutate: submitVote, isPending: isSubmitting } =
+    trpc.createVote.useMutation({
+      onSuccess(data) {
+        if (data.length > 0) {
+          router.replace(`/${data[0].id}`);
+        }
+      },
+    });
+  const refTitle = useRef<HTMLInputElement>(null);
+
+  const [options, setOptions] = useState<string[]>([]);
 
   useEffect(() => {
-    setOptions([
-      { id: crypto.randomUUID(), item: "" },
-      { id: crypto.randomUUID(), item: "" },
-    ]);
+    setOptions(["", ""]);
   }, []);
 
-  const removeOption = (id: string) => {
-    if (!id) return;
+  const removeOption = (index: number) => {
     if (options.length === 2) {
       alert("At least 2 options are required");
       return;
     }
-    setOptions((prevOptions) => {
-      return prevOptions.filter((option) => option.id !== id);
-    });
+    const newOptions = [...options];
+    newOptions.splice(index, 1);
+    setOptions(newOptions);
   };
 
   const addOption = (position: number) => {
     if (options.length === 10) {
-        return alert("At most 10 options are allowed");
+      return alert("At most 10 options are allowed");
     }
-    setOptions((prevOptions)=>{
-        const newOptions = [...prevOptions];
-        newOptions.splice(position+1, 0, {id: crypto.randomUUID(), item: ""})
-        return newOptions
-    })
+    setOptions((prevOptions) => {
+      const newOptions = [...prevOptions];
+      newOptions.splice(position + 1, 0, "");
+      return newOptions;
+    });
+  };
+
+  const onSubmit = async () => {
+    const title = refTitle.current?.value;
+    if (!title) return;
+    submitVote({ title, options });
   };
 
   return (
@@ -59,18 +69,18 @@ const Page = () => {
         <CardContent className="flex flex-col gap-4">
           <div>
             <Label>Title</Label>
-            <Input placeholder="Title" />
+            <Input placeholder="Title" ref={refTitle} />
           </div>
           <Label>Options</Label>
           {options.map((option, i) => {
             return (
-              <div key={option.id} className="flex flex-row items-center gap-2">
+              <div key={i} className="flex flex-row items-center gap-2">
                 <Input
-                  value={option.item}
+                  value={option}
                   onChange={(e) => {
                     setOptions((prevOptions) => {
                       const newOptions = [...prevOptions];
-                      newOptions[i].item = e.target.value;
+                      newOptions[i] = e.target.value;
                       return newOptions;
                     });
                   }}
@@ -78,16 +88,20 @@ const Page = () => {
                 />
                 <Button
                   onClick={() => {
-                    removeOption(option.id);
+                    removeOption(i);
                   }}
                   size={"icon"}
                   variant={"destructive"}
                 >
                   <Trash size={16} />
                 </Button>
-                <Button onClick={()=>{
-                    addOption(i)
-                }} size={"icon"} variant={"outline"}>
+                <Button
+                  onClick={() => {
+                    addOption(i);
+                  }}
+                  size={"icon"}
+                  variant={"outline"}
+                >
                   <Plus size={16} />
                 </Button>
               </div>
@@ -95,7 +109,9 @@ const Page = () => {
           })}
         </CardContent>
         <CardFooter>
-          <Button>Save & Start new Vote</Button>
+          <Button disabled={isSubmitting} onClick={onSubmit}>
+            {isSubmitting ? "Saving..." : "Save & Start new Vote"}
+          </Button>
         </CardFooter>
       </Card>
     </div>

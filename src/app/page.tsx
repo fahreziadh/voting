@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,11 +9,63 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { trpc } from "@/lib/trpc/client";
 
-export default async function Home() {
+export default function Home() {
   return (
-    <div className="flex flex-row items-center justify-center h-screen gap-4">
-      <Card className="h-[200px] w-[300px]">
+    <div className="flex flex-col p-6 gap-6">
+      <Header />
+      <ListVotes />
+    </div>
+  );
+}
+
+const ListVotes = () => {
+  const { data: dataProfile, isLoading: isLoadingProfile } =
+    trpc.profile.useQuery();
+  const { data: dataVotes, isLoading: isLoadingVotes } =
+    trpc.listVotesByUser.useQuery();
+
+  if (isLoadingProfile || isLoadingVotes) {
+    return <Card className="p-6">Loading...</Card>;
+  }
+
+  if (!dataProfile) {
+    return (
+      <Card className="p-6">
+        Please{" "}
+        <Link href={"/api/auth/signin"} className="text-blue-500">
+          login
+        </Link>{" "}
+        to see your created votes
+      </Card>
+    );
+  }
+
+  if (!dataVotes || !dataVotes?.length) {
+    return <Card className="p-6">No votes found</Card>;
+  }
+
+  return (
+    <div>
+      <h1 className="font-semibold mb-4">Your Votes</h1>
+      <div className="grid grid-cols-2 gap-6">
+        {dataVotes.map((item) => (
+          <Link href={`/${item.id}`} key={item.id}>
+            <Card className="hover:border-foreground">
+              <CardHeader>{item.title}</CardHeader>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const Header = () => {
+  return (
+    <Card className="p-6 grid grid-cols-2 gap-6">
+      <Card>
         <CardHeader>
           <CardTitle>Create new Vote</CardTitle>
         </CardHeader>
@@ -25,7 +78,7 @@ export default async function Home() {
           </Link>
         </CardFooter>
       </Card>
-      <Card className="h-[200px] w-[300px]">
+      <Card>
         <CardHeader>
           <CardTitle>Join Vote</CardTitle>
         </CardHeader>
@@ -36,6 +89,6 @@ export default async function Home() {
           <Button className="w-full">Join</Button>
         </CardFooter>
       </Card>
-    </div>
+    </Card>
   );
-}
+};
